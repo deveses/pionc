@@ -65,14 +65,9 @@ endif
 ifeq ($(OS),Windows_NT)
 $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY):
 	@echo "Building CGO library for Windows..."
-	go env -w CGO_ENABLED=1
-# 	go env -w CC=gcc
-# 	go env -w CXX=g++
-	cd ./src/ && go build -v -buildmode=c-shared -o $(CGO_OUTPUT_BINARY) .
-
-	move src\$(CGO_OUTPUT_BINARY) $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY)
-	cd lib && gendef.exe $(CGO_OUTPUT_BINARY)
-	cd lib && dlltool.exe -d libwebrtc.def -l libwebrtc.lib
+	cd ./src/ && go build -v -buildmode=c-shared -o $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY) .
+	cd $(CGO_LIB_DIR) && gendef $(CGO_OUTPUT_BINARY)
+	cd $(CGO_LIB_DIR) && dlltool -d libwebrtc.def -l libwebrtc.lib
 
 else ifeq ($(OS),Darwin)
 $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY): $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY)
