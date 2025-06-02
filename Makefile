@@ -2,8 +2,8 @@ ifndef OS
 	OS := $(shell uname -s)
 endif
 
-CGO_INCLUDE_DIR := include
-CGO_LIB_DIR := lib
+CGO_INCLUDE_DIR := $(shell mkdir -p include && realpath ./include)
+CGO_LIB_DIR := $(shell mkdir -p lib && realpath ./lib)
 CGO_BUILD_DIR := $(shell mkdir -p build && realpath ./build)
 
 #ARCH := $(shell uname -m)
@@ -76,9 +76,9 @@ endif
 
 ifeq ($(OS),Windows_NT)
 $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER):
-	move src\$(CGO_OUTPUT_HEADER) ./include/$(CGO_OUTPUT_HEADER)
-	powershell -ExecutionPolicy Bypass -File scripts\refine_header.ps1 -InputFile include\$(CGO_OUTPUT_HEADER) -OutputFile include\temp_header.h
-	move /y include\temp_header.h include\$(CGO_OUTPUT_HEADER)
+	mv $(CGO_BUILD_DIR)/$(CGO_OUTPUT_HEADER) $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)
+	powershell -ExecutionPolicy Bypass -File scripts\refine_header.ps1 -InputFile $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER) -OutputFile $(CGO_INCLUDE_DIR)/temp_header.h
+	mv /y $(CGO_INCLUDE_DIR)/temp_header.h $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)
 	@echo Processed $(CGO_OUTPUT_HEADER): Removed problematic block.
 else ifeq ($(OS),Darwin)
 $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER):
