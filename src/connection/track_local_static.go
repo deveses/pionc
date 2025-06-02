@@ -13,7 +13,7 @@ import (
 	"github.com/pion/webrtc/v4/pkg/media"
 )
 
-const const_rtpOutboundMTU = 1200
+const rtpOutboundMTU = 1200
 
 type TrackLocalSample struct {
 	packetizer rtp.Packetizer
@@ -65,7 +65,7 @@ func (s *TrackLocalSample) Bind(t webrtc.TrackLocalContext) (webrtc.RTPCodecPara
 
 	s.sequencer = rtp.NewRandomSequencer()
 	s.packetizer = rtp.NewPacketizer(
-		const_rtpOutboundMTU,
+		rtpOutboundMTU,
 		0, // Value is handled when writing
 		0, // Value is handled when writing
 		payloader,
@@ -73,7 +73,7 @@ func (s *TrackLocalSample) Bind(t webrtc.TrackLocalContext) (webrtc.RTPCodecPara
 		codec.ClockRate,
 	)
 
-	// Most of the reason to implement this TrackHMCSample class is so I can add these absolute time stamps out.
+	// Most of the reason to implement this TrackLocalSample class is so I can add these absolute time stamps out.
 	s.packetizer.EnableAbsSendTime(1)
 
 	s.clockRate = float64(codec.RTPCodecCapability.ClockRate)
@@ -146,8 +146,8 @@ func (s *TrackLocalSample) GeneratePadding(samples uint32) error {
 	return FlattenErrs(writeErrs)
 }
 
-func payloaderForCodecMime(codec string) (rtp.Payloader, error) {
-	switch strings.ToLower(codec) {
+func payloaderForCodecMime(codecMimeType string) (rtp.Payloader, error) {
+	switch strings.ToLower(codecMimeType) {
 	case strings.ToLower(webrtc.MimeTypeH264):
 		return &codecs.H264Payloader{}, nil
 	case strings.ToLower(webrtc.MimeTypeOpus):
@@ -191,7 +191,7 @@ func (me multiError) Error() string {
 	}
 
 	if len(errstrings) == 0 {
-		return "multiError must contain multiple error but is empty"
+		return "multiError must contain multiple errors but is empty"
 	}
 
 	return strings.Join(errstrings, "\n")

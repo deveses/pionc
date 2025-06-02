@@ -9,6 +9,10 @@
 *.dylib
 *.a
 
+build/
+lib/
+include/
+
 # Test binary, built with `go test -c`
 *.test
 
