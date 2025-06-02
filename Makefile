@@ -79,6 +79,8 @@ endif
 
 ifeq ($(OS),Windows_NT)
 $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER):
+	ls $(CGO_BUILD_DIR)
+	ls $(CGO_INCLUDE_DIR)
 	mv $(CGO_BUILD_DIR)/$(CGO_OUTPUT_HEADER) $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)
 	powershell -ExecutionPolicy Bypass -File scripts\refine_header.ps1 -InputFile $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER) -OutputFile $(CGO_INCLUDE_DIR)/temp_header.h
 	mv /y $(CGO_INCLUDE_DIR)/temp_header.h $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)
