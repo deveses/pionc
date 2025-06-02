@@ -53,8 +53,9 @@ $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY): $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a $
 # x86_64-w64-mingw32-dlltool.exe -d awesome.def -l awesome.lib
 ifeq ($(OS),Windows_NT)
 create_dirs:
-	@if not exist "lib" mkdir lib
-	@if not exist "include" mkdir include
+    mkdir -p ./lib
+    mkdir -p ./include
+    mkdir -p ./build
 else
 create_dirs:
 	mkdir -p ./lib
