@@ -7,6 +7,11 @@
 *.dll
 *.so
 *.dylib
+*.a
+
+build/
+lib/
+include/
 
 # Test binary, built with `go test -c`
 *.test
@@ -29,4 +34,4 @@ go.work.sum
 
 # Editor/IDE
 # .idea/
-# .vscode/
+.vscode/
