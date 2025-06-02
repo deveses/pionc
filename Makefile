@@ -84,7 +84,7 @@ $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER):
 	@test -f "$(CGO_BUILD_DIR)/$(CGO_OUTPUT_HEADER)" || (echo "Error: libwebrtc.h was not generated. Check the build configuration." && exit 1)
 	cp $(CGO_BUILD_DIR)/$(CGO_OUTPUT_HEADER) $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)
 	@test -f "$(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)" || (echo "Error: libwebrtc.h was not copied. Check the build configuration." && exit 1)
-	powershell -ExecutionPolicy Bypass -File scripts\refine_header.ps1 -InputFile "$(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)" -OutputFile "$(CGO_INCLUDE_DIR)/temp_header.h"
+	powershell -ExecutionPolicy Bypass -File "scripts/refine_header.ps1" -InputFile "$(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)" -OutputFile "$(CGO_INCLUDE_DIR)/temp_header.h"
 	mv /y $(CGO_INCLUDE_DIR)/temp_header.h $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)
 	@echo Processed $(CGO_OUTPUT_HEADER): Removed problematic block.
 else ifeq ($(OS),Darwin)
