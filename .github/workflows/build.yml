@@ -1,4 +1,4 @@
-name: Makefile CI
+name: Build
 
 on:
   push:
@@ -42,8 +42,20 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}    
     steps:
     - uses: actions/checkout@v4
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: mingw64
+        update: true
+        install: >-
+          make
+          mingw-w64-x86_64-gcc
 
     - name: Install dependencies
       run: choco install make mingw
@@ -55,4 +67,5 @@ jobs:
 
     - name: Build
       shell: bash
-      run: make all
+      run: |
+        make all
