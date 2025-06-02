@@ -31,12 +31,13 @@ info:
 	@echo "CGO Include Directory: $(CGO_INCLUDE_DIR)"
 	@echo "CGO Library Directory: $(CGO_LIB_DIR)"
 	@echo "CGO Build Directory: $(CGO_BUILD_DIR)"
+	go env
 
 $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a:
 	@echo "Building CGO library for macOS arm64..."
 	cd ./src/ && CGO_ENABLED=1 GOARCH=arm64 go build -buildmode=c-archive -o ../build/webrtc_wrapper_arm64.a .
 $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a:
-	@echo "Building CGO library for macOS amd64..."
+	@echo "Building CGO library for macOS/linux amd64..."
 	cd ./src/ && CGO_ENABLED=1 GOARCH=amd64 go build -buildmode=c-archive -o ../build/webrtc_wrapper_amd64.a .
 
 $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY): $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a
@@ -59,10 +60,6 @@ create_dirs:
 	mkdir -p ./lib
 	mkdir -p ./include
 endif
-
-build_linux: create_dirs webrtc_wrapper_amd64.a
-	mv ./src/webrtc_wrapper_amd64.a ./lib/libwebrtc.a
-	mv ./src/webrtc_wrapper_amd64.h ./include/libwebrtc.h
 
 ifeq ($(OS),Windows_NT)
 $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY):
@@ -91,7 +88,13 @@ else ifeq ($(OS),Darwin)
 $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER):
 	mv $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.h ./include/libwebrtc.h
 	rm $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.h
+else ifeq ($(OS),Linux)
+$(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER):
+	mv $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.h ./include/libwebrtc.h
 endif
+
+build_linux: create_dirs $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)
+	mv $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY)
 
 build_darwin: create_dirs $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY) $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)
 
