@@ -35,10 +35,10 @@ info:
 
 $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a:
 	@echo "Building CGO library for macOS arm64..."
-	cd ./src/ && CGO_ENABLED=1 GOARCH=arm64 go build -buildmode=c-archive -o ../build/webrtc_wrapper_arm64.a .
+	cd ./src/ && CGO_ENABLED=1 GOARCH=arm64 go build -buildmode=c-archive -o $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a .
 $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a:
 	@echo "Building CGO library for macOS/linux amd64..."
-	cd ./src/ && CGO_ENABLED=1 GOARCH=amd64 go build -buildmode=c-archive -o ../build/webrtc_wrapper_amd64.a .
+	cd ./src/ && CGO_ENABLED=1 GOARCH=amd64 go build -buildmode=c-archive -o $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a .
 
 $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY): $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a
 	@echo "Building CGO library for macOS universal binary..."
@@ -65,9 +65,12 @@ endif
 ifeq ($(OS),Windows_NT)
 $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY):
 	@echo "Building CGO library for Windows..."
-	cd ./src/ && go build -v -buildmode=c-shared -o $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY) .
-	cd $(CGO_LIB_DIR) && gendef $(CGO_OUTPUT_BINARY)
-	cd $(CGO_LIB_DIR) && dlltool -d libwebrtc.def -l libwebrtc.lib
+	cd ./src/ && go build -v -buildmode=c-shared -o $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY) .
+	cd $(CGO_BUILD_DIR) && gendef $(CGO_OUTPUT_BINARY)
+	cd $(CGO_BUILD_DIR) && dlltool -d libwebrtc.def -l libwebrtc.lib
+	mv $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY) $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY)
+	mv $(CGO_BUILD_DIR)/libwebrtc.def $(CGO_LIB_DIR)/libwebrtc.def
+	mv $(CGO_BUILD_DIR)/libwebrtc.lib $(CGO_LIB_DIR)/libwebrtc.lib
 
 else ifeq ($(OS),Darwin)
 $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY): $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY)
