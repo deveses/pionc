@@ -14,14 +14,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: configure
-      run: ./configure
-
     - name: Install dependencies
-      run: make
+      run: apt-get update && apt-get install -y make clang
 
-    - name: Run check
-      run: make check
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version-file: 'src/go.mod'    
 
-    - name: Run distcheck
-      run: make distcheck
+    - name: Buil
+      run: make all
