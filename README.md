@@ -1,3 +1,4 @@
+[![Build](https://github.com/deveses/pionc/actions/workflows/build.yml/badge.svg)](https://github.com/deveses/pionc/actions/workflows/build.yml)
 
 # Pion WebRTC Wrapper
 
