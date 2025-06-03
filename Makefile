@@ -2,8 +2,8 @@ ifndef OS
 	OS := $(shell uname -s)
 endif
 
-CGO_INCLUDE_DIR := include
-CGO_LIB_DIR := lib
+CGO_INCLUDE_DIR := $(shell mkdir -p include && realpath ./include)
+CGO_LIB_DIR := $(shell mkdir -p lib && realpath ./lib)
 CGO_BUILD_DIR := $(shell mkdir -p build && realpath ./build)
 
 #ARCH := $(shell uname -m)
@@ -35,10 +35,10 @@ info:
 
 $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a:
 	@echo "Building CGO library for macOS arm64..."
-	cd ./src/ && CGO_ENABLED=1 GOARCH=arm64 go build -buildmode=c-archive -o ../build/webrtc_wrapper_arm64.a .
+	cd ./src/ && CGO_ENABLED=1 GOARCH=arm64 go build -buildmode=c-archive -o $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a .
 $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a:
 	@echo "Building CGO library for macOS/linux amd64..."
-	cd ./src/ && CGO_ENABLED=1 GOARCH=amd64 go build -buildmode=c-archive -o ../build/webrtc_wrapper_amd64.a .
+	cd ./src/ && CGO_ENABLED=1 GOARCH=amd64 go build -buildmode=c-archive -o $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a .
 
 $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY): $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a $(CGO_BUILD_DIR)/webrtc_wrapper_amd64.a
 	@echo "Building CGO library for macOS universal binary..."
@@ -53,8 +53,9 @@ $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY): $(CGO_BUILD_DIR)/webrtc_wrapper_arm64.a $
 # x86_64-w64-mingw32-dlltool.exe -d awesome.def -l awesome.lib
 ifeq ($(OS),Windows_NT)
 create_dirs:
-	@if not exist "lib" mkdir lib
-	@if not exist "include" mkdir include
+	mkdir -p ./lib
+	mkdir -p ./include
+	mkdir -p ./build
 else
 create_dirs:
 	mkdir -p ./lib
@@ -64,14 +65,12 @@ endif
 ifeq ($(OS),Windows_NT)
 $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY):
 	@echo "Building CGO library for Windows..."
-	go env -w CGO_ENABLED=1
-# 	go env -w CC=gcc
-# 	go env -w CXX=g++
-	cd ./src/ && go build -v -buildmode=c-shared -o $(CGO_OUTPUT_BINARY) .
-
-	move src\$(CGO_OUTPUT_BINARY) $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY)
-	cd lib && gendef.exe $(CGO_OUTPUT_BINARY)
-	cd lib && dlltool.exe -d libwebrtc.def -l libwebrtc.lib
+	cd ./src/ && go build -v -buildmode=c-shared -o $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY) .
+	cd $(CGO_BUILD_DIR) && gendef $(CGO_OUTPUT_BINARY)
+	cd $(CGO_BUILD_DIR) && dlltool -d libwebrtc.def -l libwebrtc.lib
+	mv $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY) $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY)
+	mv $(CGO_BUILD_DIR)/libwebrtc.def $(CGO_LIB_DIR)/libwebrtc.def
+	mv $(CGO_BUILD_DIR)/libwebrtc.lib $(CGO_LIB_DIR)/libwebrtc.lib
 
 else ifeq ($(OS),Darwin)
 $(CGO_LIB_DIR)/$(CGO_OUTPUT_BINARY): $(CGO_BUILD_DIR)/$(CGO_OUTPUT_BINARY)
@@ -80,9 +79,9 @@ endif
 
 ifeq ($(OS),Windows_NT)
 $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER):
-	move src\$(CGO_OUTPUT_HEADER) ./include/$(CGO_OUTPUT_HEADER)
-	powershell -ExecutionPolicy Bypass -File scripts\refine_header.ps1 -InputFile include\$(CGO_OUTPUT_HEADER) -OutputFile include\temp_header.h
-	move /y include\temp_header.h include\$(CGO_OUTPUT_HEADER)
+	cp $(CGO_BUILD_DIR)/$(CGO_OUTPUT_HEADER) $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)
+	powershell -ExecutionPolicy Bypass -File "scripts/refine_header.ps1" -InputFile "$(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)" -OutputFile "$(CGO_INCLUDE_DIR)/temp_header.h"
+	mv "$(CGO_INCLUDE_DIR)/temp_header.h" "$(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER)"
 	@echo Processed $(CGO_OUTPUT_HEADER): Removed problematic block.
 else ifeq ($(OS),Darwin)
 $(CGO_INCLUDE_DIR)/$(CGO_OUTPUT_HEADER):

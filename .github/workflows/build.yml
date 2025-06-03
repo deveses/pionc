@@ -1,4 +1,4 @@
-name: Makefile CI
+name: Build
 
 on:
   push:
@@ -23,3 +23,46 @@ jobs:
 
     - name: Build
       run: make all
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: brew install make
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version-file: 'src/go.mod'    
+
+    - name: Build
+      run: make all
+
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: mingw64
+        update: true
+        install: >-
+          make
+          mingw-w64-x86_64-gcc
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version-file: 'src/go.mod'    
+
+    - name: Build
+      shell: bash
+      run: |
+        make all
